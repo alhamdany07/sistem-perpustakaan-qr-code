@@ -71,9 +71,11 @@ if (session()->getFlashdata('msg')) : ?>
           <?php endif; ?>
           <?php
           foreach ($loans as $key => $loan) :
-            $loanCreateDate = Time::parse($loan['loan_date'], locale: 'id');
-            $loanDueDate = Time::parse($loan['due_date'], locale: 'id');
-            $loanReturnDate = Time::parse($loan['return_date'], locale: 'id');
+            $loanCreateDate = Time::parse($loan['loan_date'], 'Asia/Jayapura', 'id');
+$loanDueDate = Time::parse($loan['due_date'], 'Asia/Jayapura', 'id');
+$loanReturnDate = Time::parse($loan['return_date'], 'Asia/Jayapura', 'id');
+$now = Time::now('Asia/Jayapura', 'id');
+
 
             $isFined = $loan['fine_id'] != null;
             $isFinePaid = $isFined ? (($loan['amount_paid'] ?? 0) >= $loan['fine_amount']) : true;

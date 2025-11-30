@@ -19,9 +19,9 @@
 
 use CodeIgniter\I18n\Time;
 
-$now = Time::now(locale: 'id');
-$loanDate = Time::parse($loan['loan_date'], locale: 'id');
-$dueDate = Time::parse($loan['due_date'], locale: 'id');
+$now      = Time::now('Asia/Jayapura', 'id');
+$loanDate = Time::parse($loan['loan_date'], 'Asia/Jayapura', 'id');
+$dueDate  = Time::parse($loan['due_date'], 'Asia/Jayapura', 'id');
 
 $isLate = $now->isAfter($dueDate);
 $isDueDate = $now->today()->difference($dueDate)->getDays() == 0;

@@ -72,8 +72,8 @@ if (session()->getFlashdata('msg')) : ?>
           <?php endif; ?>
           <?php
           foreach ($loans as $key => $loan) :
-            $loanCreateDate = Time::parse($loan['loan_date'], locale: 'id');
-            $loanDueDate = Time::parse($loan['due_date'], locale: 'id');
+            $loanCreateDate = Time::parse($loan['loan_date'], 'Asia/Jayapura', 'id');
+              $loanDueDate = Time::parse($loan['due_date'], 'Asia/Jayapura', 'id');
 
             $isLate = $now->isAfter($loanDueDate);
             $isDueDate = $now->today()->difference($loanDueDate)->getDays() == 0;

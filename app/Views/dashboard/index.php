@@ -5,63 +5,51 @@
 <?= $this->endSection() ?>
 
 <?= $this->section('content') ?>
+
 <div class="row">
   <!-- BOOKS -->
   <div class="col-lg-3 col-sm-6">
     <a href="<?= base_url('admin/books'); ?>">
       <div class="card">
         <div class="card-body">
-          <h2>
-            <i class="ti ti-book"></i>
-          </h2>
-          <h3>
-            <?= count($books); ?> Buku
-          </h3>
+          <h2><i class="ti ti-book"></i></h2>
+          <h3><?= count($books); ?> Buku</h3>
         </div>
       </div>
     </a>
   </div>
+
   <!-- BOOK STOCK -->
   <div class="col-lg-3 col-sm-6">
     <a href="<?= base_url('admin/books'); ?>">
       <div class="card">
         <div class="card-body">
-          <h2>
-            <i class="ti ti-database"></i>
-          </h2>
-          <h3>
-            <?= $totalBookStock; ?> Stok Buku
-          </h3>
+          <h2><i class="ti ti-database"></i></h2>
+          <h3><?= $totalBookStock; ?> Stok Buku</h3>
         </div>
       </div>
     </a>
   </div>
+
   <!-- RACKS -->
   <div class="col-lg-3 col-6">
     <a href="<?= base_url('admin/racks'); ?>">
       <div class="card">
         <div class="card-body">
-          <h2>
-            <i class="ti ti-columns"></i>
-          </h2>
-          <h3>
-            <?= count($racks); ?> Rak Buku
-          </h3>
+          <h2><i class="ti ti-columns"></i></h2>
+          <h3><?= count($racks); ?> Rak Buku</h3>
         </div>
       </div>
     </a>
   </div>
+
   <!-- CATEGORIES -->
   <div class="col-lg-3 col-6">
     <a href="<?= base_url('admin/categories'); ?>">
       <div class="card">
         <div class="card-body">
-          <h2>
-            <i class="ti ti-category-2"></i>
-          </h2>
-          <h3>
-            <?= count($categories); ?> Kategori
-          </h3>
+          <h2><i class="ti ti-category-2"></i></h2>
+          <h3><?= count($categories); ?> Kategori</h3>
         </div>
       </div>
     </a>
@@ -74,27 +62,20 @@
     <a href="<?= base_url('admin/members'); ?>">
       <div class="card">
         <div class="card-body">
-          <h2>
-            <i class="ti ti-user"></i>
-          </h2>
-          <h3>
-            <?= count($members); ?> Anggota
-          </h3>
+          <h2><i class="ti ti-user"></i></h2>
+          <h3><?= count($members); ?> Anggota</h3>
         </div>
       </div>
     </a>
   </div>
+
   <!-- LOANS -->
   <div class="col-sm-6">
     <a href="<?= base_url('admin/loans'); ?>">
       <div class="card">
         <div class="card-body">
-          <h2>
-            <i class="ti ti-arrows-exchange"></i>
-          </h2>
-          <h3>
-            <?= count($loans); ?> Transaksi Peminjaman
-          </h3>
+          <h2><i class="ti ti-arrows-exchange"></i></h2>
+          <h3><?= count($loans); ?> Transaksi Peminjaman</h3>
         </div>
       </div>
     </a>
@@ -133,6 +114,7 @@
   </div>
 </div>
 
+<!-- CHARTS ROW -->
 <div class="row">
   <!-- OVERVIEW CHART -->
   <div class="col-lg-8 d-flex align-items-strech">
@@ -147,20 +129,26 @@
       </div>
     </div>
   </div>
+
+  <!-- SIDE CARDS (FINES + ARREARS) -->
   <div class="col-lg-4">
     <div class="row">
-      <!-- FINE INCOME -->
-      <!-- PENDAPATAN DENDA -->
+
+      <!-- TOTAL PENDAPATAN DENDA -->
       <div class="col-lg-12">
-        <div class="card overflow-hidden">
+        <div class="card" style="overflow: visible;">
           <div class="card-body">
-            <h5 class="card-title mb-9 fw-semibold"> Total Pendapatan Denda </h5>
+            <h5 class="card-title mb-9 fw-semibold">Total Pendapatan Denda</h5>
             <div class="row align-items-start">
               <div class="col-9">
-                <h4 class="fw-semibold mb-3">Rp<?= $fineIncomeThisMonth['value'] ?? 0; ?></h4>
+                <h4 class="fw-semibold mb-3">
+                  Rp<?= $fineIncomeThisMonth['value'] ?? 0; ?>
+                </h4>
                 <div class="d-flex align-items-center">
                   <div class="me-4">
-                    <span class="fs-2"><?= $dateNow->toLocalizedString('MMMM Y'); ?></span>
+                    <span class="fs-2">
+                      <?= $dateNow->toLocalizedString('MMMM Y'); ?>
+                    </span>
                   </div>
                 </div>
               </div>
@@ -172,38 +160,41 @@
                 </div>
               </div>
             </div>
-            <div class="row">
-              <?php
-              $thisMonth = $fineIncomeThisMonth['value'];
-              $lastMonth = $fineIncomeLastMonth['value'];
 
-              $percentage = (($thisMonth - $lastMonth == 0 || $lastMonth == 0)
-                ? 0
-                : round(($thisMonth - $lastMonth) / $lastMonth * 100));
-              ?>
-              <div class="d-flex align-items-center mt-3">
-                <span class="me-1 rounded-circle <?= $percentage >= 0 ? 'bg-light-success' : 'bg-light-danger'; ?> round-20 d-flex align-items-center justify-content-center">
-                  <i class="ti <?= $percentage >= 0 ? 'ti-arrow-up-left text-success' : 'ti-arrow-down-left text-danger'; ?>  "></i>
-                </span>
-                <p class="text-dark me-1 fs-3 mb-0">
-                  <?= ($percentage >= 0 ? '+' : '') . $percentage; ?>%
-                </p>
-                <p class="fs-3 mb-0 text">dari bulan sebelumnya</p>
-              </div>
+            <?php
+            $thisMonth = $fineIncomeThisMonth['value'];
+            $lastMonth = $fineIncomeLastMonth['value'];
+
+            $percentage = (($thisMonth - $lastMonth == 0 || $lastMonth == 0)
+              ? 0
+              : round(($thisMonth - $lastMonth) / $lastMonth * 100));
+            ?>
+            <div class="d-flex align-items-center mt-3">
+              <span class="me-1 rounded-circle <?= $percentage >= 0 ? 'bg-light-success' : 'bg-light-danger'; ?> round-20 d-flex align-items-center justify-content-center">
+                <i class="ti <?= $percentage >= 0 ? 'ti-arrow-up-left text-success' : 'ti-arrow-down-left text-danger'; ?>"></i>
+              </span>
+              <p class="text-dark me-1 fs-3 mb-0">
+                <?= ($percentage >= 0 ? '+' : '') . $percentage; ?>%
+              </p>
+              <p class="fs-3 mb-0">dari bulan sebelumnya</p>
             </div>
+
+            <!-- Chart Fines di dalam card-body -->
+            <div id="fine" style="margin-top: 10px;"></div>
           </div>
-          <div id="fine"></div>
         </div>
       </div>
-      <!-- TOTAL ARREARS -->
+
       <!-- TOTAL TUNGGAKAN -->
       <div class="col-lg-12">
-        <div class="card overflow-hidden">
+        <div class="card" style="overflow: visible;">
           <div class="card-body">
             <div class="row align-items-start">
               <div class="col-9">
-                <h5 class="card-title mb-9 fw-semibold"> Total Tunggakan </h5>
-                <h4 class="fw-semibold mb-3">Rp<?= $totalArrears; ?></h4>
+                <h5 class="card-title mb-9 fw-semibold">Total Tunggakan</h5>
+                <h4 class="fw-semibold mb-3">
+                  Rp<?= $totalArrears; ?>
+                </h4>
                 <div class="d-flex align-items-center">
                   <div class="me-4">
                     <span class="fs-2">
@@ -221,13 +212,17 @@
               </div>
             </div>
             <div class="row mt-3"></div>
+
+            <!-- Chart Tunggakan -->
+            <div id="arrears"></div>
           </div>
-          <div id="arrears"></div>
         </div>
       </div>
+
     </div>
   </div>
 </div>
+
 <?= $this->endSection() ?>
 
 <?= $this->section('scripts') ?>
@@ -235,25 +230,25 @@
 <script>
   $(function() {
     // =====================================
-    // Overview
+    // OVERVIEW 7 HARI
     // =====================================
     const newMembersData = [
       <?php foreach ($newMembersOverview as $value) : ?>
         <?= "'{$value}', "; ?>
       <?php endforeach; ?>
-    ].map((value => parseInt(value)));
+    ].map(value => parseInt(value));
 
     const loansData = [
       <?php foreach ($loansOverview as $value) : ?>
         <?= "'{$value}', "; ?>
       <?php endforeach; ?>
-    ].map((value => parseInt(value)));
+    ].map(value => parseInt(value));
 
     const returnsData = [
       <?php foreach ($returnsOverview as $value) : ?>
         <?= "'{$value}', "; ?>
       <?php endforeach; ?>
-    ].map((value => parseInt(value)));
+    ].map(value => parseInt(value));
 
     const highestValue = Math.max(
       Math.max(...newMembersData),
@@ -338,15 +333,14 @@
       yaxis: {
         show: true,
         min: 0,
-        max: () => {
+        max: (() => {
           const roundedHighestValue = (Math.ceil(highestValue / 10) * 10);
-
           if (roundedHighestValue <= 30) {
             return roundedHighestValue + 5;
           } else {
             return roundedHighestValue + 10;
           }
-        },
+        })(),
         tickAmount: 5,
         labels: {
           style: {
@@ -371,10 +365,11 @@
         }
       }]
     };
+
     new ApexCharts(document.querySelector("#chart"), chart).render();
 
     // =====================================
-    // FINES
+    // FINES (Pendapatan Denda)
     // =====================================
     var fines = {
       chart: {
@@ -387,14 +382,31 @@
         fontFamily: "Plus Jakarta Sans', sans-serif",
         foreColor: "#49ca74",
       },
+      tooltip: {
+        enabled: true,
+        theme: "dark",
+        fixed: {
+          enabled: true,
+          position: "topRight",
+        },
+        x: {
+          show: true,
+        },
+      },
       series: [{
         name: "Denda terkumpul",
         color: "#49ca74",
-        data: [<?= $fineIncomeLastMonth['value']; ?>, <?= $fineIncomeThisMonth['value']; ?>],
+        data: [
+          <?= $fineIncomeLastMonth['value']; ?>,
+          <?= $fineIncomeThisMonth['value']; ?>
+        ],
       }],
       xaxis: {
         type: "category",
-        categories: ['<?= $fineIncomeLastMonth['month']; ?>', '<?= $fineIncomeThisMonth['month']; ?>'],
+        categories: [
+          '<?= $fineIncomeLastMonth['month']; ?>',
+          '<?= $fineIncomeThisMonth['month']; ?>'
+        ],
         labels: {
           style: {
             cssClass: "fill-color"
@@ -413,21 +425,12 @@
       markers: {
         size: 0,
       },
-      tooltip: {
-        theme: "dark",
-        fixed: {
-          enabled: true,
-          position: "right",
-        },
-        x: {
-          show: true,
-        },
-      },
     };
+
     new ApexCharts(document.querySelector("#fine"), fines).render();
 
     // =====================================
-    // ARREARS
+    // ARREARS (Total Tunggakan)
     // =====================================
     var arrears = {
       chart: {
@@ -485,7 +488,8 @@
         },
       },
     };
+
     new ApexCharts(document.querySelector("#arrears"), arrears).render();
-  })
+  });
 </script>
 <?= $this->endSection() ?>

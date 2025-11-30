@@ -331,15 +331,18 @@ class LoansController extends ResourceController
                 filename: $qrCodeLabel
             );
 
-            $newLoan = [
-                'book_id' => $book['id'],
-                'quantity' => $quantity,
-                'member_id' => $member['id'],
-                'uid' => $loanUid,
-                'loan_date' => Time::now()->toDateTimeString(),
-                'due_date' => Time::now()->addDays(intval($duration))->toDateTimeString(),
-                'qr_code' => $qrCode,
-            ];
+           // Pakai timezone Jayapura
+$nowJayapura = Time::now('Asia/Jayapura', 'id');
+
+$newLoan = [
+    'book_id'    => $book['id'],
+    'quantity'   => $quantity,
+    'member_id'  => $member['id'],
+    'uid'        => $loanUid,
+    'loan_date'  => $nowJayapura->toDateTimeString(),
+    'due_date'   => $nowJayapura->addDays((int)$duration)->toDateTimeString(),
+    'qr_code'    => $qrCode,
+];
 
             $this->loanModel->insert($newLoan);
 

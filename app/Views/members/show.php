@@ -27,6 +27,11 @@ if (session()->getFlashdata('msg')) : ?>
     </div>
   </div>
 <?php endif; ?>
+<a href="<?= base_url('admin/members/card/' . $member['uid']) ?>"
+   class="btn btn-warning mt-3">
+    Download Kartu Anggota
+</a>
+
 <div class="row">
   <div class="col-12 col-lg-7">
     <div class="row">
@@ -196,7 +201,16 @@ if (session()->getFlashdata('msg')) : ?>
     <div class="card">
       <div class="card-body">
         <p class="text-center mb-4" style="line-break: anywhere;">UID : <?= $member['uid']; ?></p>
-        <div id="qr-code" class="m-auto"></div>
+        <div class="text-center">
+    <img src="<?= base_url(MEMBERS_QR_CODE_URI . $member['qr_code']); ?>"
+         alt="QR Code" 
+         style="width: 280px;">
+
+    <p class="mt-2 fw-bold" style="font-size: 18px;">
+        <?= $member['first_name'] . ' ' . $member['last_name']; ?>
+    </p>
+</div>
+
       </div>
     </div>
   </div>

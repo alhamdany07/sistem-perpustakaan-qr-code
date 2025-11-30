@@ -27,11 +27,6 @@ class FinesController extends ResourceController
         helper('upload');
     }
 
-    /**
-     * Return an array of resource objects, themselves in array format
-     *
-     * @return mixed
-     */
     public function index()
     {
         $itemPerPage = 20;
@@ -148,41 +143,6 @@ class FinesController extends ResourceController
         ]);
     }
 
-    /**
-     * Return a new resource object, with default properties
-     *
-     * @return mixed
-     */
-    // public function new()
-    // {
-    //! Not implemented
-    // }
-
-    /**
-     * Create a new resource object, from "posted" parameters
-     *
-     * @return mixed
-     */
-    // public function create()
-    // {
-    //! Not implemented
-    // }
-
-    /**
-     * Return the editable properties of a resource object
-     *
-     * @return mixed
-     */
-    // public function edit($id = null)
-    // {
-    //! Not implemented
-    // }
-
-    /**
-     * Add or update a model resource, from "posted" properties
-     *
-     * @return mixed
-     */
     public function update($uid = null)
     {
         if (!$this->validate([
@@ -210,11 +170,14 @@ class FinesController extends ResourceController
         $nominal = $this->request->getVar('nominal');
         $newAmountPaid = intval($return['amount_paid'] ?? 0) + intval($nominal);
 
+        // ✅ PERBAIKAN TIMEZONE ASIA/JAYAPURA DI SINI
         if (!$this->fineModel->update(
             $return['fine_id'],
             [
                 'amount_paid' => $newAmountPaid,
-                'paid_at'     => $newAmountPaid >= $return['fine_amount'] ? Time::now()->toDateTimeString() : null
+                'paid_at'     => $newAmountPaid >= $return['fine_amount']
+                    ? Time::now('Asia/Jayapura', 'id')->toDateTimeString()
+                    : null
             ]
         )) {
             session()->setFlashdata(['msg' => 'Update failed']);
@@ -229,14 +192,4 @@ class FinesController extends ResourceController
         session()->setFlashdata(['msg' => 'Update fine successful']);
         return redirect()->to('admin/fines');
     }
-
-    /**
-     * Delete the designated resource object from the model
-     *
-     * @return mixed
-     */
-    // public function delete($id = null)
-    // {
-    //! Not implemented
-    // }
 }

@@ -2,65 +2,60 @@
 
 namespace App\Libraries;
 
-use Endroid\QrCode\Color\Color;
-use Endroid\QrCode\Encoding\Encoding;
-use Endroid\QrCode\ErrorCorrectionLevel\ErrorCorrectionLevelHigh;
-use Endroid\QrCode\Label\Font\Font;
 use Endroid\QrCode\QrCode;
-use Endroid\QrCode\Label\Label;
-use Endroid\QrCode\Logo\Logo;
-use Endroid\QrCode\RoundBlockSizeMode\RoundBlockSizeModeMargin;
+use Endroid\QrCode\Encoding\Encoding;
+use Endroid\QrCode\Color\Color;
 use Endroid\QrCode\Writer\PngWriter;
+use Endroid\QrCode\Logo\Logo;
 
 class QRGenerator
 {
-    protected QrCode $qrCode;
-    protected PngWriter $writer;
-    protected Logo $logo;
-    protected Label $label;
-
-    public function __construct(
-        Color $foregroundColor = new Color(10, 15, 30),
-        Color $backgroundColor = new Color(255, 255, 255),
-        Color $textColor = new Color(10, 15, 30)
-    ) {
-        $this->writer = new PngWriter();
-
-        $this->logo = Logo::create('')->setResizeToWidth(75);
-
-        $this->label = Label::create('')->setTextColor($textColor);
-
-        $this->qrCode = QrCode::create('')
-            ->setEncoding(new Encoding('UTF-8'))
-            ->setErrorCorrectionLevel(new ErrorCorrectionLevelHigh())
-            ->setSize(300)
-            ->setMargin(10)
-            ->setRoundBlockSizeMode(new RoundBlockSizeModeMargin())
-            ->setForegroundColor($foregroundColor)
-            ->setBackgroundColor($backgroundColor);
-    }
-
     public function generateQRCode(
         string $data,
         string $labelText = null,
         string $dir = QR_CODES_PATH,
-        string $filename = 'My QR Code',
-        string $logoPath = null
+        string $filename = 'qr_code'
     ) {
-        if (!file_exists($dir)) mkdir($dir);
+        // Buat folder jika belum ada
+        if (!file_exists($dir)) {
+            mkdir($dir, 0777, true);
+        }
 
-        $filename = url_title(substr($filename, 0, 16), lowercase: true) . '_'
-            . substr(sha1($filename . rand(0, 1000)), 19, 5) . '_'
-            . time() . '.png';
+        // Format nama file
+        $filename = url_title(substr($filename, 0, 16), true) . '_' . time() . '.png';
 
-        // Save it to a file
-        $this->writer
-            ->write(
-                qrCode: $this->qrCode->setData($data),
-                label: $labelText ? $this->label->setText($labelText) : null,
-                logo: $logoPath ? $this->logo->setPath($logoPath) : null
-            )
-            ->saveToFile(path: $dir . $filename);
+        // QR dasar
+        $qr = QrCode::create($data)
+            ->setEncoding(new Encoding('UTF-8'))
+            ->setSize(300)
+            ->setMargin(10)
+            ->setForegroundColor(new Color(10, 15, 30))
+            ->setBackgroundColor(new Color(255, 255, 255));
+
+        // Writer
+        $writer = new PngWriter();
+
+        // -----------------------------------
+        // ⭐ Tambahkan LOGO UNMUS di tengah QR
+        // -----------------------------------
+        $logoPath = FCPATH . 'logo-unmus.png';
+
+        if (file_exists($logoPath)) {
+            // ukuran logo real
+            $logo = Logo::create($logoPath)
+                ->setResizeToWidth(80)   // atur ukuran logo
+                ->setPunchoutBackground(false);
+
+            // Tulis QR + logo
+            $result = $writer->write($qr, $logo);
+
+        } else {
+            // Tanpa logo
+            $result = $writer->write($qr);
+        }
+
+        // Simpan ke file
+        $result->saveToFile($dir . $filename);
 
         return $filename;
     }

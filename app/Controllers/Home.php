@@ -3,19 +3,36 @@
 namespace App\Controllers;
 
 use App\Models\BookModel;
+use App\Models\CategoryModel;
+use App\Models\RackModel;
+use App\Models\MemberModel;
 
 class Home extends BaseController
 {
     protected BookModel $bookModel;
+    protected CategoryModel $categoryModel;
+    protected RackModel $rackModel;
+    protected MemberModel $memberModel;
 
     public function __construct()
     {
-        $this->bookModel = new BookModel;
+        $this->bookModel = new BookModel();
+        $this->categoryModel = new CategoryModel();
+        $this->rackModel = new RackModel();
+        $this->memberModel = new MemberModel();
     }
 
     public function index(): string
     {
-        return view('home/home');
+        // Kirim data statistik ke view home
+        $data = [
+            'booksCount'    => $this->bookModel->countAll(),
+            'categoryCount' => $this->categoryModel->countAll(),
+            'rackCount'     => $this->rackModel->countAll(),
+            'memberCount'   => $this->memberModel->countAll(),
+        ];
+
+        return view('home/home', $data);
     }
 
     public function book(): string

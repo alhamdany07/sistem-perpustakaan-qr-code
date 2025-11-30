@@ -211,53 +211,62 @@ class ReturnsController extends ResourceController
      * @return mixed
      */
     public function create()
-    {
-        $date = Time::parse($this->request->getVar('date') ?? 'now', locale: 'id');
-        $loanUid = $this->request->getVar('loan_uid');
+{
+    // FIX: parse waktu dengan timezone Asia/Jayapura
+    $date = Time::parse(
+        $this->request->getVar('date') ?? 'now',
+        'Asia/Jayapura',
+        'id'
+    );
 
-        $loan = $this->loanModel->where('uid', $loanUid)->first();
+    $loanUid = $this->request->getVar('loan_uid');
+    $loan = $this->loanModel->where('uid', $loanUid)->first();
 
-        if (empty($loan)) {
-            throw new PageNotFoundException('Loan not found');
-        }
-
-        $loanDueDate = Time::parse($loan['due_date'], locale: 'id');
-
-        $isLate = $date->isAfter($loanDueDate);
-
-        if ($isLate) {
-            if (!$this->loanModel->update($loan['id'], [
-                'return_date' => $date->toDateTimeString()
-            ])) {
-                session()->setFlashdata(['msg' => 'Update failed', 'error' => true]);
-                return redirect()->to('admin/returns/new?loan-uid=' . $loan['uid']);
-            }
-
-            $finePerDay = FinesPerDayModel::getAmount();
-            $daysLate = $date->today()->difference($loanDueDate)->getDays();
-            $totalFine = abs($daysLate) * $loan['quantity'] * $finePerDay;
-
-            if (!$this->fineModel->save([
-                'loan_id' => $loan['id'],
-                'fine_amount' => $totalFine,
-            ])) {
-                session()->setFlashdata(['msg' => 'Update failed', 'error' => true]);
-                return redirect()->to('admin/returns/new?loan-uid=' . $loan['uid']);
-            }
-        } else {
-            deleteLoansQRCode($loan['qr_code']);
-            if (!$this->loanModel->update($loan['id'], [
-                'return_date' => $date->toDateTimeString(),
-                'qr_code' => null
-            ])) {
-                session()->setFlashdata(['msg' => 'Update failed', 'error' => true]);
-                return redirect()->to('admin/returns/new?loan-uid=' . $loan['uid']);
-            }
-        }
-
-        session()->setFlashdata(['msg' => 'Success', 'error' => false]);
-        return redirect()->to('admin/returns');
+    if (empty($loan)) {
+        throw new PageNotFoundException('Loan not found');
     }
+
+    // FIX timezone juga untuk due_date
+    $loanDueDate = Time::parse($loan['due_date'], 'Asia/Jayapura', 'id');
+
+    $isLate = $date->isAfter($loanDueDate);
+
+    if ($isLate) {
+
+        if (!$this->loanModel->update($loan['id'], [
+            'return_date' => Time::now('Asia/Jayapura', 'id')->toDateTimeString(),
+        ])) {
+            session()->setFlashdata(['msg' => 'Update failed', 'error' => true]);
+            return redirect()->to('admin/returns/new?loan-uid=' . $loan['uid']);
+        }
+
+        $finePerDay = FinesPerDayModel::getAmount();
+        $daysLate = $date->today()->difference($loanDueDate)->getDays();
+        $totalFine = abs($daysLate) * $loan['quantity'] * $finePerDay;
+
+        $this->fineModel->save([
+            'loan_id' => $loan['id'],
+            'fine_amount' => $totalFine,
+        ]);
+
+    } else {
+
+        deleteLoansQRCode($loan['qr_code']);
+
+        if (!$this->loanModel->update($loan['id'], [
+            'return_date' => $date->setTimezone('Asia/Jayapura')->toDateTimeString(),
+            'qr_code' => null
+        ])) {
+            session()->setFlashdata(['msg' => 'Update failed', 'error' => true]);
+            return redirect()->to('admin/returns/new?loan-uid=' . $loan['uid']);
+        }
+
+    }
+
+    session()->setFlashdata(['msg' => 'Success', 'error' => false]);
+    return redirect()->to('admin/returns');
+}
+
 
     /**
      * Return the editable properties of a resource object

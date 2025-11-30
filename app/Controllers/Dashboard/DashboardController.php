@@ -48,208 +48,159 @@ class DashboardController extends ResourceController
         return view('dashboard/index', $data);
     }
 
+    /* ============================================================
+       ===============  DATA SUMMARY (STATISTIK) ===================
+       ============================================================*/
     protected function getDataSummaries(): array
     {
         $books = $this->bookModel
             ->join('book_stock', 'books.id = book_stock.book_id', 'LEFT')
             ->findAll();
 
-        $totalBookStocks = array_reduce(
-            array_map(function ($book) {
-                return $book['quantity'];
-            }, $books),
-            function ($carry, $item) {
-                return ($carry + $item);
-            }
-        );
+        $totalBookStocks = array_sum(array_map(fn ($b) => $b['quantity'], $books));
 
         return [
-            'books'                 => $books,
-            'totalBookStock'        => $totalBookStocks,
-            'racks'                 => $this->rackModel->findAll(),
-            'categories'            => $this->categoryModel->findAll(),
-            'members'               => $this->memberModel->findAll(),
-            'loans'                 => $this->loanModel->findAll(),
+            'books'          => $books,
+            'totalBookStock' => $totalBookStocks,
+            'racks'          => $this->rackModel->findAll(),
+            'categories'     => $this->categoryModel->findAll(),
+            'members'        => $this->memberModel->findAll(),
+            'loans'          => $this->loanModel->findAll(),
         ];
     }
 
+
+    /* ============================================================
+       ================  LAPORAN HARIAN (TODAY) ===================
+       ============================================================*/
     protected function getReports(): array
     {
-        $now = Time::now(locale: 'id');
+        $now = Time::now('Asia/Jayapura', 'id');
 
-        $todayMidnight = $now->today()->toDateTimeString();
-        $tomorrowMidnight = $now->tomorrow()->toDateTimeString();
-
-        $newMembersToday = $this->memberModel
-            ->where("created_at BETWEEN '{$todayMidnight}' AND '{$tomorrowMidnight}'")
-            ->findAll();
-
-        $newLoansToday = $this->loanModel
-            ->where("created_at BETWEEN '{$todayMidnight}' AND '{$tomorrowMidnight}'")
-            ->findAll();
-
-        $newBookReturnsToday = $this->loanModel
-            ->where("return_date BETWEEN '{$todayMidnight}' AND '{$tomorrowMidnight}'")
-            ->findAll();
-
-        $returnDueToday = $this->loanModel
-            ->where("due_date BETWEEN '{$todayMidnight}' AND '{$tomorrowMidnight}'")
-            ->findAll();
+        // Hari ini 00:00:00
+        $dayStart = $now->setTime(0, 0, 0)->toDateTimeString();
+        // Besok 00:00:00
+        $dayEnd   = $now->addDays(1)->setTime(0, 0, 0)->toDateTimeString();
 
         return [
-            'newMembersToday'       => $newMembersToday,
-            'newLoansToday'         => $newLoansToday,
-            'newBookReturnsToday'   => $newBookReturnsToday,
-            'returnDueToday'        => $returnDueToday,
+            'newMembersToday'     => $this->memberModel->where("created_at BETWEEN '$dayStart' AND '$dayEnd'")->findAll(),
+            'newLoansToday'       => $this->loanModel->where("created_at BETWEEN '$dayStart' AND '$dayEnd'")->findAll(),
+            'newBookReturnsToday' => $this->loanModel->where("return_date BETWEEN '$dayStart' AND '$dayEnd'")->findAll(),
+            'returnDueToday'      => $this->loanModel->where("due_date BETWEEN '$dayStart' AND '$dayEnd'")->findAll(),
         ];
     }
 
+
+    /* ============================================================
+       ================  WEEKLY OVERVIEW (7 HARI) ==================
+       ============================================================*/
     protected function getWeeklyOverview(): array
     {
-        $now = Time::now(locale: 'id');
-        $lastWeekDateStringRange = [];
+        $now = Time::now('Asia/Jayapura', 'id');
 
+        $lastWeekDateStringRange = [];
         $newMembersOverview = [];
         $loansOverview = [];
         $returnsOverview = [];
 
         for ($i = 6; $i >= 0; $i--) {
-            $t = $now->today()->subDays($i);
 
-            $todayDateTimeString = $now->today()->subDays($i)->toDateTimeString();
-            $tomorrowDateTimeString = $now->tomorrow()->subDays($i)->toDateTimeString();
+            $day = $now->subDays($i)->setTime(0, 0, 0);
+            $dayStart = $day->toDateTimeString();
+            $dayEnd   = $day->addDays(1)->toDateTimeString();
 
-            array_push($lastWeekDateStringRange, "{$t->getDay()}/" . ($t->getMonth() <= 9 ? '0' : '') . $t->getMonth());
+            $lastWeekDateStringRange[] = $day->format('d/m');
 
-            array_push(
-                $newMembersOverview,
-                count(
-                    $this->memberModel
-                        ->where("created_at BETWEEN '{$todayDateTimeString}' AND '{$tomorrowDateTimeString}'")
-                        ->findAll()
-                )
-            );
-            array_push(
-                $loansOverview,
-                count(
-                    $this->loanModel
-                        ->where("created_at BETWEEN '{$todayDateTimeString}' AND '{$tomorrowDateTimeString}'")
-                        ->findAll()
-                )
-            );
-            array_push(
-                $returnsOverview,
-                count(
-                    $this->loanModel
-                        ->where("return_date BETWEEN '{$todayDateTimeString}' AND '{$tomorrowDateTimeString}'")
-                        ->findAll()
-                )
-            );
+            $newMembersOverview[] = count($this->memberModel->where("created_at BETWEEN '$dayStart' AND '$dayEnd'")->findAll());
+            $loansOverview[]      = count($this->loanModel->where("created_at BETWEEN '$dayStart' AND '$dayEnd'")->findAll());
+            $returnsOverview[]    = count($this->loanModel->where("return_date BETWEEN '$dayStart' AND '$dayEnd'")->findAll());
         }
 
         return [
-            'dateNow'                   => $now,
-            'lastWeekDateStringRange'   => $lastWeekDateStringRange,
-            'newMembersOverview'        => $newMembersOverview,
-            'loansOverview'             => $loansOverview,
-            'returnsOverview'           => $returnsOverview,
+            'dateNow'                 => $now,
+            'lastWeekDateStringRange' => $lastWeekDateStringRange,
+            'newMembersOverview'      => $newMembersOverview,
+            'loansOverview'           => $loansOverview,
+            'returnsOverview'         => $returnsOverview,
         ];
     }
 
+
+    /* ============================================================
+       =================  PENDAPATAN DENDA BULANAN ================
+       ============================================================*/
     protected function getMonthlyFines(): array
     {
-        $now = Time::now(locale: 'id');
+        $now = Time::now('Asia/Jayapura', 'id');
 
-        $firstDayLastMonth = $now->today()->subMonths(1)->setDay(1)->toDateTimeString();
-        $lastDayLastMonth = $now->today()->setDay(1)->subSeconds(1)->toDateTimeString();
-        $firstDayThisMonth = $now->today()->setDay(1)->toDateTimeString();
-        $now;
+        // Bulan ini
+        $firstDayThisMonth = $now->setDay(1)->setTime(0,0,0)->toDateTimeString();
+        $endOfToday        = Time::now('Asia/Jayapura', 'id')->toDateTimeString();
 
-        $finesDataLastMonth = $this->fineModel
-            ->where("created_at BETWEEN '{$firstDayLastMonth}' AND '{$lastDayLastMonth}'")
-            ->findAll();
-        $finesDataThisMonth = $this->fineModel
-            ->where("created_at BETWEEN '{$firstDayThisMonth}' AND '{$now->toDateTimeString()}'")
-            ->findAll();
+        // Bulan lalu
+        $firstDayLastMonth = $now->subMonths(1)->setDay(1)->setTime(0,0,0)->toDateTimeString();
+        $endLastMonth      = date('Y-m-d H:i:s', strtotime($firstDayThisMonth) - 1);
 
-        $fineIncomeLastMonth['value'] = array_reduce(
-            array_map(function ($fine) {
-                return $fine['amount_paid'] ?? 0;
-            }, $finesDataLastMonth),
-            function ($carry, $item) {
-                return ($carry + $item);
-            }
-        );
-        $fineIncomeLastMonth['month'] = $now->subMonths(1)->toLocalizedString('MMMM Y');
+        $finesDataLastMonth = $this->fineModel->where("created_at BETWEEN '$firstDayLastMonth' AND '$endLastMonth'")->findAll();
+        $finesDataThisMonth = $this->fineModel->where("created_at BETWEEN '$firstDayThisMonth' AND '$endOfToday'")->findAll();
 
-        $fineIncomeThisMonth['value'] = array_reduce(
-            array_map(function ($fine) {
-                return $fine['amount_paid'] ?? 0;
-            }, $finesDataThisMonth),
-            function ($carry, $item) {
-                return ($carry + $item);
-            }
-        );
-        $fineIncomeThisMonth['month'] = $now->toLocalizedString('MMMM Y');
+        $fineIncomeLastMonth = [
+            'value' => array_sum(array_map(fn ($f) => $f['amount_paid'] ?? 0, $finesDataLastMonth)),
+            'month' => Time::parse($firstDayLastMonth, 'Asia/Jayapura', 'id')->toLocalizedString('MMMM Y')
+        ];
+
+        $fineIncomeThisMonth = [
+            'value' => array_sum(array_map(fn ($f) => $f['amount_paid'] ?? 0, $finesDataThisMonth)),
+            'month' => Time::parse($firstDayThisMonth, 'Asia/Jayapura', 'id')->toLocalizedString('MMMM Y')
+        ];
 
         return [
             'fineIncomeLastMonth' => $fineIncomeLastMonth,
-            'fineIncomeThisMonth' => $fineIncomeThisMonth
+            'fineIncomeThisMonth' => $fineIncomeThisMonth,
         ];
     }
 
+
+    /* ============================================================
+       =================  TOTAL TUNGGAKAN ==========================
+       ============================================================*/
     protected function getTotalArrears(): array
     {
         $fines = $this->fineModel->findAll();
 
-        $totalFines = array_reduce(
-            array_map(function ($fine) {
-                return $fine['fine_amount'];
-            }, $fines),
-            function ($carry, $item) {
-                return ($carry + $item);
-            }
-        );
+        $totalFines = array_sum(array_map(fn ($f) => $f['fine_amount'], $fines));
 
-        $totalFinesPaid = array_reduce(
-            array_map(function ($fine) {
-                if (($fine['amount_paid'] ?? 0) > $fine['fine_amount']) {
-                    return $fine['fine_amount'];
-                }
-                return $fine['amount_paid'];
-            }, $fines),
-            function ($carry, $item) {
-                return ($carry + $item);
-            }
-        );
+        $totalFinesPaid = array_sum(array_map(function ($fine) {
+            return min($fine['amount_paid'] ?? 0, $fine['fine_amount']);
+        }, $fines));
 
-        $fines = $this->fineModel->limit(100)->orderBy('created_at')->findAll();
+        // Grafik tunggakan
+        $finesTimeline = $this->fineModel->orderBy('created_at')->findAll();
 
         $carry = 0;
         $arrears = [];
 
-        foreach ($fines as $fine) {
-            $arrear = $carry;
+        foreach ($finesTimeline as $fine) {
+            $carry += max(0, $fine['fine_amount'] - ($fine['amount_paid'] ?? 0));
 
-            if (($fine['amount_paid'] ?? 0) <= $fine['fine_amount']) {
-                $arrear = $carry + ($fine['fine_amount'] - $fine['amount_paid']);
-            }
-
-            array_push($arrears, [
-                'arrear' => $arrear,
-                'date' => Time::parse($fine['created_at'], locale: 'id')->toLocalizedString('d MMMM Y')
-            ]);
-            $carry = $arrear;
+            $arrears[] = [
+                'arrear' => $carry,
+                'date'   => Time::parse($fine['created_at'], 'Asia/Jayapura', 'id')
+                                ->toLocalizedString('d MMMM Y')
+            ];
         }
 
-        $totalArrears = $totalFines - $totalFinesPaid;
-
-        $oldestFineDate = Time::parse($this->fineModel->selectMin('created_at')->first()['created_at'] ?? 'now', locale: 'id');
+        $oldestFineDate = Time::parse(
+            $this->fineModel->selectMin('created_at')->first()['created_at'] ?? 'now',
+            'Asia/Jayapura',
+            'id'
+        );
 
         return [
-            'arrears' => $arrears,
-            'totalArrears' => $totalArrears,
-            'oldestFineDate' => $oldestFineDate,
+            'arrears'       => $arrears,
+            'totalArrears'  => $totalFines - $totalFinesPaid,
+            'oldestFineDate'=> $oldestFineDate,
         ];
     }
 }
+

@@ -71,15 +71,28 @@ if (auth()->user()->inGroup('superadmin') ?? false) {
   <div>
     <!-- Brand -->
     <div class="brand-logo d-flex align-items-center justify-content-between">
-      <div class="pt-4 mx-auto">
+
+    <!-- LOGO UNMUS -->
+    <div class="pt-4 mx-auto text-center">
+
+        <img src="<?= base_url('assets/logo-unmus.png'); ?>"
+             alt="Logo UNMUS"
+             style="width: 70px; height: auto; margin-bottom: 10px;">
+
         <a href="<?= base_url(); ?>">
-          <h2>Buku<span class="text-primary">Hub</span></h2>
+            <h4 class="m-0">
+                Perpustakaan<span class="text-primary"> Unmus</span>
+            </h4>
         </a>
-      </div>
-      <div class="close-btn d-xl-none d-block sidebartoggler cursor-pointer" id="sidebarCollapse">
-        <i class="ti ti-x fs-8"></i>
-      </div>
     </div>
+
+    <!-- CLOSE BUTTON (untuk mobile) -->
+    <div class="close-btn d-xl-none d-block sidebartoggler cursor-pointer" id="sidebarCollapse">
+        <i class="ti ti-x fs-8"></i>
+    </div>
+
+</div>
+
 
     <!-- Sidebar navigation-->
     <nav class="sidebar-nav scroll-sidebar" data-simplebar="">

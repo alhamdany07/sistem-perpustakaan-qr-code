@@ -10,10 +10,10 @@
 use App\Models\FinesPerDayModel;
 use CodeIgniter\I18n\Time;
 
-$now = Time::now(locale: 'id');
+$now = Time::now('Asia/Jayapura', 'id');
+$loanCreateDate = Time::parse($loan['loan_date'], 'Asia/Jayapura', 'id');
+$loanDueDate = Time::parse($loan['due_date'], 'Asia/Jayapura', 'id');
 
-$loanCreateDate = Time::parse($loan['loan_date'], locale: 'id');
-$loanDueDate = Time::parse($loan['due_date'], locale: 'id');
 
 $isLate = $now->isAfter($loanDueDate);
 $daysLate = $now->today()->difference($loanDueDate)->getDays();
@@ -37,7 +37,8 @@ $daysLate = $now->today()->difference($loanDueDate)->getDays();
 <form action="<?= base_url('admin/returns'); ?>" method="post">
   <?= csrf_field(); ?>
   <input type="hidden" name="loan_uid" value="<?= $loan['uid']; ?>">
-  <input type="hidden" name="date" value="<?= Time::now(locale: 'id'); ?>">
+  <input type="hidden" name="date" value="<?= Time::now('Asia/Jayapura', 'id')->toDateTimeString(); ?>">
+
   <!-- Loan -->
   <div class="card">
     <div class="card-body">
